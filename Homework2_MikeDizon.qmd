@@ -193,6 +193,33 @@ month_most_mass_shootings %>%
 
 ```{r}
 
+#Filter the data for mass shooting fatalities with Black shooters
+black_shooters <- mass_shootings %>% 
+  filter(race == "Black")
+
+#Filter the data for mass shooting fatalities with White shooters
+white_shooters <- mass_shootings %>% 
+  filter(race == "White")
+
+#Create a histogram to check the shape of the distribution of fatalities for Black and White shooters
+ggplot() +
+  geom_histogram(data = black_shooters, aes(x = fatalities), fill = "blue", alpha = 0.5, bins = 30) +
+  geom_histogram(data = white_shooters, aes(x=fatalities), fill = "red", alpha = 0.5, bins = 30) +
+  labs(title = "Distribution of Mass Shooting Fatalities by Shooter's Race", x = "Fatalities", y = "Count", fill = "Shooter's Race") +
+  scale_fill_manual(values = c("blue", "red"), labels = c("Black Shooter", "White Shooter"))
+  theme_minimal()
+  
+#Filter the data for mass shooting fatalities with Latino shooters
+latino_shooters <- mass_shootings %>% 
+  filter(race == "Latino")
+
+#Create a histogram to check the shape of the distribution of fatalities for Latino and White shooters
+ggplot() +
+  geom_histogram(data = latino_shooters, aes(x = fatalities), fill = "blue", alpha = 0.5, bins = 30) +
+  geom_histogram(data = white_shooters, aes(x=fatalities), fill = "red", alpha = 0.5, bins = 30) +
+  labs(title = "Distribution of Mass Shooting Fatalities by Shooter's Race", x = "Fatalities", y = "Count", fill = "Shooter's Race") +
+  scale_fill_manual(values = c("blue", "red"), labels = c("Latino Shooter", "White Shooter"))
+  theme_minimal()
 ```
 
 ### Very open-ended
@@ -201,11 +228,55 @@ month_most_mass_shootings %>%
 
 ```{r}
 
+#Filter the data for only those shooters suffering from prior mental illness
+with_mental_illness <- mass_shootings %>% 
+  filter(prior_mental_illness == "Yes")
+
+#Filter the data for only those shooters not suffering from prior mental illness 
+no_mental_illness <- mass_shootings %>% 
+  filter(prior_mental_illness == "No")
+
+# Combine the two datasets
+combined_data <- rbind(with_mental_illness, no_mental_illness)
+
+# Create a grouped bar chart
+ggplot(combined_data, aes(x = prior_mental_illness, fill = prior_mental_illness)) +
+  geom_bar() +
+  labs(x = "Prior Mental Illness", y = "Number of Shootings") +
+  ggtitle("Comparison of Mass Shootings\nwith Mental Illness vs. No Mental Illness") +
+  theme_minimal()
+
 ```
 
 -   Assess the relationship between mental illness and total victims, mental illness and location type, and the intersection of all three variables.
 
 ```{r}
+
+# Scatter Plot: Mental Illness vs. Total Victims
+ggplot(mass_shootings, aes(x = prior_mental_illness, y = total_victims)) +
+  geom_point() +
+  labs(x = "Prior Mental Illness", y = "Total Victims") +
+  ggtitle("Relationship between Mental Illness and Total Victims")
+
+# Stacked Bar Chart: Mental Illness vs. Location Type
+ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, fill = location_type)) +
+  geom_bar() +
+  labs(x = "Prior Mental Illness", y = "Count") +
+  ggtitle("Comparison of Location Types based on Mental Illness") +
+  theme(legend.position = "bottom")
+
+# Grouped Bar Chart: Mental Illness, Location Type, and Total Victims
+ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, y = total_victims, fill = location_type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Prior Mental Illness", y = "Total Victims") +
+  ggtitle("Comparison of Mental Illness, Location Type, and Total Victims") +
+  theme(legend.position = "bottom")
+
+# Heatmap: Mental Illness, Location Type, and Total Victims
+ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, y = location_type, fill = total_victims)) +
+  geom_tile() +
+  labs(x = "Prior Mental Illness", y = "Location Type", fill = "Total Victims") +
+  ggtitle("Intersection of Mental Illness, Location Type, and Total Victims")
 
 ```
 
