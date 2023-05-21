@@ -327,11 +327,28 @@ The data dictionary is as follows
 
 ```{r}
 
+# Calculate the number and frequency of fraudulent transactions per year
+fraud_summary <- card_fraud %>%
+  group_by(trans_year) %>%
+  summarize(num_fraud_transactions = sum(is_fraud),
+            frequency = num_fraud_transactions / n())
+
+
 ```
 
 -   How much money (in US\$ terms) are fraudulent transactions costing the company? Generate a table that summarizes the total amount of legitimate and fraudulent transactions per year and calculate the % of fraudulent transactions, in US\$ terms.
 
 ```{r}
+
+# Calculate the total amount of legitimate and fraudulent transactions per year
+transaction_summary <- card_fraud %>%
+  group_by(trans_year) %>%
+  summarize(total_legitimate_amount = sum(amt * (1 - is_fraud)),
+            total_fraudulent_amount = sum(amt * is_fraud))
+
+# Calculate the percentage of fraudulent transactions in US$ terms
+transaction_summary <- transaction_summary %>%
+  mutate(fraud_percentage = total_fraudulent_amount / (total_legitimate_amount + total_fraudulent_amount) * 100)
 
 ```
 
@@ -339,11 +356,61 @@ The data dictionary is as follows
 
 ```{r}
 
+# Filter the data for legitimate transactions
+legitimate_transactions <- card_fraud %>%
+  filter(is_fraud == 0)
+
+# Filter the data for fraudulent transactions
+fraudulent_transactions <- card_fraud %>%
+  filter(is_fraud == 1)
+
+# Create a histogram for legitimate transactions
+ggplot(legitimate_transactions, aes(x = amt)) +
+  geom_histogram() +
+  labs(x = "Amount", y = "Frequency", title = "Distribution of Amounts - Legitimate Transactions")
+
+# Calculate summary statistics for legitimate transactions
+legitimate_summary <- legitimate_transactions %>%
+  summarize(
+    mean_amount = mean(amt),
+    median_amount = median(amt),
+    min_amount = min(amt),
+    max_amount = max(amt)
+  )
+
+# Create a histogram for fraudulent transactions
+ggplot(fraudulent_transactions, aes(x = amt)) +
+  geom_histogram() +
+  labs(x = "Amount", y = "Frequency", title = "Distribution of Amounts - Fraudulent Transactions")
+
+# Calculate summary statistics for fraudulent transactions
+fraudulent_summary <- fraudulent_transactions %>%
+  summarize(
+    mean_amount = mean(amt),
+    median_amount = median(amt),
+    min_amount = min(amt),
+    max_amount = max(amt)
+  )
+
 ```
 
 -   What types of purchases are most likely to be instances of fraud? Consider category of merchants and produce a bar chart that shows % of total fraudulent transactions sorted in order.
 
 ```{r}
+
+# Calculate the percentage of total fraudulent transactions per merchant category
+fraud_category <- card_fraud %>%
+  group_by(category) %>%
+  summarize(total_fraud_transactions = sum(is_fraud)) %>%
+  mutate(percentage = (total_fraud_transactions / sum(total_fraud_transactions)) * 100) %>%
+  arrange(desc(percentage))
+
+# Create a bar chart
+ggplot(fraud_category, aes(x = reorder(category, -percentage), y = percentage, fill = category)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Merchant Category", y = "% of Total Fraudulent Transactions", 
+       title = "Percentage of Total Fraudulent Transactions by Merchant Category") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
@@ -368,6 +435,58 @@ mutate(
 
 ```{r}
 
+# Create new variables using the lubridate package
+card_fraud <- card_fraud %>%
+  mutate(
+    date_only = date(trans_date_trans_time),
+    month_name = month(trans_date_trans_time, label = TRUE),
+    hour = hour(trans_date_trans_time),
+    weekday = wday(trans_date_trans_time, label = TRUE)
+  )
+
+# Analyze fraud prevalence by day
+fraud_by_day <- card_fraud %>%
+  group_by(date_only) %>%
+  summarize(total_fraud_transactions = sum(is_fraud))
+
+# Analyze fraud prevalence by month
+fraud_by_month <- card_fraud %>%
+  group_by(month_name) %>%
+  summarize(total_fraud_transactions = sum(is_fraud))
+
+# Analyze fraud prevalence by hour
+fraud_by_hour <- card_fraud %>%
+  group_by(hour) %>%
+  summarize(total_fraud_transactions = sum(is_fraud))
+
+# Create plots to visualize fraud prevalence
+ggplot(fraud_by_day, aes(x = date_only, y = total_fraud_transactions)) +
+  geom_line() +
+  labs(x = "Date", y = "Total Fraudulent Transactions", title = "Fraud Prevalence by Day")
+
+ggplot(fraud_by_month, aes(x = month_name, y = total_fraud_transactions)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Month", y = "Total Fraudulent Transactions", title = "Fraud Prevalence by Month")
+
+ggplot(fraud_by_hour, aes(x = hour, y = total_fraud_transactions)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Hour", y = "Total Fraudulent Transactions", title = "Fraud Prevalence by Hour")
+
+
+# Calculate customer age at the time of the transaction
+card_fraud <- card_fraud %>%
+  mutate(
+    age = interval(dob, trans_date_trans_time) / years(1)
+  )
+
+# Compare the age distribution between fraudulent and non-fraudulent transactions
+ggplot(card_fraud, aes(x = age, fill = is_fraud)) +
+  geom_histogram(binwidth = 5, position = "identity", alpha = 0.7) +
+  labs(x = "Age", y = "Count", title = "Age Distribution: Fraudulent vs Non-Fraudulent Transactions",
+       fill = "Fraudulent") +
+  scale_fill_manual(values = c("#2C77BF", "#E24A33")) +
+  theme_minimal()
+
 ```
 
 -   Is fraud related to distance? The distance between a card holder's home and the location of the transaction can be a feature that is related to fraud. To calculate distance, we need the latidue/longitude of card holders's home and the latitude/longitude of the transaction, and we will use the [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula) to calculate distance. I adapted code to [calculate distance between two points on earth](https://www.geeksforgeeks.org/program-distance-two-points-earth/amp/) which you can find below
@@ -377,7 +496,7 @@ mutate(
 # code adapted from https://www.geeksforgeeks.org/program-distance-two-points-earth/amp/
 
 
-fraud <- fraud %>%
+card_fraud <- card_fraud %>%
   mutate(
     
     # convert latitude/longitude to radians
@@ -394,9 +513,53 @@ fraud <- fraud %>%
 
   )
 
+# Summary statistics
+summary_stats <- card_fraud %>%
+  summarize(
+    mean_distance = mean(distance_km),
+    median_distance = median(distance_km),
+    min_distance = min(distance_km),
+    max_distance = max(distance_km),
+    q1_distance = quantile(distance_km, 0.25),
+    q3_distance = quantile(distance_km, 0.75)
+  )
+
+# Boxplot
+ggplot(card_fraud, aes(x = is_fraud, y = distance_km)) +
+  geom_boxplot() +
+  labs(x = "Fraudulent", y = "Distance (km)") +
+  ggtitle("Distribution of Distance for Fraudulent and Non-Fraudulent Transactions")
+
+# Density plot
+ggplot(card_fraud, aes(x = distance_km, fill = is_fraud)) +
+  geom_density(alpha = 0.5) +
+  labs(x = "Distance (km)", y = "Density") +
+  ggtitle("Density Distribution of Distance for Fraudulent and Non-Fraudulent Transactions") +
+  scale_fill_manual(values = c("#FF0000", "#0000FF"), labels = c("Non-Fraudulent", "Fraudulent"))
+
 ```
 
 Plot a boxplot or a violin plot that looks at the relationship of distance and `is_fraud`. Does distance seem to be a useful feature in explaining fraud?
+
+```{r}
+
+
+# Boxplot
+ggplot(card_fraud, aes(x = is_fraud, y = distance_km)) +
+  geom_boxplot() +
+  labs(x = "Fraudulent", y = "Distance (km)") +
+  ggtitle("Relationship between Distance and Fraud") +
+  theme_minimal()
+
+# Violin plot
+ggplot(card_fraud, aes(x = is_fraud, y = distance_km)) +
+  geom_violin() +
+  labs(x = "Fraudulent", y = "Distance (km)") +
+  ggtitle("Relationship between Distance and Fraud") +
+  theme_minimal()
+
+
+```
 
 # Exploring sources of electricity production, CO2 emissions, and GDP per capita.
 
@@ -408,9 +571,52 @@ You will use
 
 `geom_area(colour="grey90", alpha = 0.5, position = "fill")`
 
+```{r}
+
+# Filter the energy dataset for the Philippines and select the relevant columns
+philippines_energy <- energy %>% 
+  filter(iso_code == "PHL") %>% 
+  select(year, coal, gas, hydro, nuclear, oil, other_renewable, solar, wind)
+
+# Reshape the data from wide to long format
+philippines_energy_long <- philippines_energy %>% 
+  pivot_longer(cols = -year, names_to = "source", values_to = "electricity_generation")
+
+# Create the stacked area chart
+ggplot(philippines_energy_long, aes(x = year, y = electricity_generation, fill = source)) +
+  geom_area(colour = "grey90", alpha = 0.5, position = "fill") +
+  labs(x = "Year", y = "Electricity Generation", fill = "Source") +
+  scale_fill_manual(values = c("coal" = "darkred", "gas" = "orange", "hydro" = "blue", 
+                               "nuclear" = "darkgreen", "oil" = "brown", "other_renewable" = "green", 
+                               "solar" = "yellow", "wind" = "lightblue")) +
+  ggtitle("Electricity Generation in the Philippines since 2000") +
+  theme_minimal()
+
+
+```
+
 ## 2. A scatter plot that looks at how CO2 per capita and GDP per capita are related
 
+```{r}
+
+# Merge the CO2 per capita and GDP per capita data
+co2_gdp <- merge(co2_percap, gdp_percap, by = "year", all = TRUE)
+
+ggplot(energy, aes(x = energy_per_capita, y = GDPpercap)) +
+  geom_point() +
+  labs(x = "Electricity Usage per Capita per Day (kWh)",
+       y = "GDP per Capita",
+       title = "Relationship between Electricity Usage and GDP per Capita") +
+  theme_minimal()
+
+```
+
 ## 3. A scatter plot that looks at how electricity usage (kWh) per capita/day GDP per capita are related
+
+```{r}
+
+
+```
 
 We will get energy data from the Our World in Data website, and CO2 and GDP per capita emissions from the World Bank, using the `wbstats`package.
 
