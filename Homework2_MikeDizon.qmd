@@ -107,9 +107,15 @@ mass_shooters_per_race %>%
   
 #Create a bar graph
   geom_col() +
-
+  
+#Create data labels for each bar
+  geom_text(aes(label = mass_shooters_per_race), vjust = -0.5, size = 3) +
+  
 #Create labels for the graph
-  labs(title = "Number of Mass Shooters Per Race", x = "Race", y = "Number of Mass Shooters")
+  labs(title = "Number of Mass Shooters Per Race", x = "Race", y = "Number of Mass Shooters") +
+  
+#Set theme
+  theme_minimal()
 
 ```
 
@@ -128,7 +134,11 @@ mass_shootings %>%
   geom_boxplot() +
 
 #Create labels for the graph
-  labs(title = "Number of Total Victims by Location type", x = "Location Type", y = "Total Victims")
+  labs(title = "Number of Total Victims by Location type", x = "Location Type", y = "Total Victims") +
+  
+#Set theme
+  theme_minimal()
+
 ```
 
 -   Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
@@ -149,7 +159,10 @@ mass_shootings %>%
   geom_boxplot() +
   
 #Create labels for the graph
-  labs(title = "Number of Total Victims by Location type", x = "Location Type", y = "Total Victims")
+  labs(title = "Number of Total Victims by Location type", x = "Location Type", y = "Total Victims") +
+  
+#Set theme
+  theme_minimal()
 ```
 
 ### More open-ended questions
@@ -175,19 +188,40 @@ count(white_males_mental_illness_after_2000)
 
 ```{r}
 
+#Create a variable to store the data frame with the month of the year with the most mass shootings
 month_most_mass_shootings <- mass_shootings %>%
+  
+#Count the number of mass shootings per year
   count(month) %>% 
+  
+#Arrange in descending order
   arrange(desc(n))
 
+#Create a variable that would indicate the correct order of months in a calendar year
 month_order <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
+#Create a plot of the number of mass shootings per month
 month_most_mass_shootings %>% 
+
+#Mutate so that the months will be in the desired order
   mutate(month = factor(month, levels = month_order, ordered = TRUE)) %>% 
+  
+#Use ggplot to create the diagram
   ggplot() +
+  
+#Set month as the x-axis and the number of mass shootings as the y-axis
   aes(x = month, y = n) +
+  
+#Create a bar graph
   geom_col() +
-  labs(title = "Number of Mass Shootings Per Month", x = "Month", y = "Number of Mass Shootings")
+  
+#Include labels for the graph
+  labs(title = "Number of Mass Shootings Per Month", x = "Month", y = "Number of Mass Shootings") +
+
+#Set theme
+  theme_minimal()
 ```
+**Answer:** As observed from the bar graph, February was the month with the most mass shootings at 13.
 
 -   How does the distribution of mass shooting fatalities differ between White and Black shooters? What about White and Latino shooters?
 
@@ -203,10 +237,46 @@ white_shooters <- mass_shootings %>%
 
 #Create a histogram to check the shape of the distribution of fatalities for Black and White shooters
 ggplot() +
-  geom_histogram(data = black_shooters, aes(x = fatalities), fill = "blue", alpha = 0.5, bins = 30) +
-  geom_histogram(data = white_shooters, aes(x=fatalities), fill = "red", alpha = 0.5, bins = 30) +
+  
+#Plot the first histogram for the mass shooting fatalities with Black shooters
+  geom_histogram(
+    data = black_shooters,
+
+#Set the number of fatalities as the x-axis
+    aes(x = fatalities), 
+
+#Fill the color of the histogram bars with blue
+    fill = "blue",
+
+#Set transparency of histogram bars
+    alpha = 0.5, 
+
+#Set number of intervals into which data is divided
+    bins = 30) +
+  
+#Plot the second histogram for the mass shooting fatalities with White shooters
+  geom_histogram(
+    data = white_shooters, 
+    
+#Set the number of fatalities as the x-axis
+    aes(x=fatalities),
+
+#Fill the color of the histogram bars with red
+    fill = "red", 
+
+#Set transparency of histogram bars
+    alpha = 0.5, 
+
+#Set number of intervals into which data is divided
+    bins = 30) +
+  
+#Create labels for the histogram
   labs(title = "Distribution of Mass Shooting Fatalities by Shooter's Race", x = "Fatalities", y = "Count", fill = "Shooter's Race") +
-  scale_fill_manual(values = c("blue", "red"), labels = c("Black Shooter", "White Shooter"))
+  
+#Manually specify the fill color for Black and White shooters
+  scale_fill_manual(values = c("blue", "red"), labels = c("Black Shooter", "White Shooter")) +
+  
+#Set theme
   theme_minimal()
   
 #Filter the data for mass shooting fatalities with Latino shooters
@@ -215,12 +285,52 @@ latino_shooters <- mass_shootings %>%
 
 #Create a histogram to check the shape of the distribution of fatalities for Latino and White shooters
 ggplot() +
-  geom_histogram(data = latino_shooters, aes(x = fatalities), fill = "blue", alpha = 0.5, bins = 30) +
-  geom_histogram(data = white_shooters, aes(x=fatalities), fill = "red", alpha = 0.5, bins = 30) +
+  
+#Plot the first histogram for the mass shooting fatalities with White shooters
+  geom_histogram(
+    data = white_shooters,
+
+#Set the number of fatalities as the x-axis
+    aes(x = fatalities), 
+
+#Fill the color of the histogram bars with red
+    fill = "red",
+
+#Set transparency of histogram bars
+    alpha = 0.5, 
+
+#Set number of intervals into which data is divided
+    bins = 30) +
+  
+#Plot the second histogram for the mass shooting fatalities with Latino shooters
+  geom_histogram(
+    data = latino_shooters, 
+    
+#Set the number of fatalities as the x-axis
+    aes(x=fatalities),
+
+#Fill the color of the histogram bars with green
+    fill = "green", 
+
+#Set transparency of histogram bars
+    alpha = 0.5, 
+
+#Set number of intervals into which data is divided
+    bins = 30) +
+  
+#Create labels for the histogram
   labs(title = "Distribution of Mass Shooting Fatalities by Shooter's Race", x = "Fatalities", y = "Count", fill = "Shooter's Race") +
-  scale_fill_manual(values = c("blue", "red"), labels = c("Latino Shooter", "White Shooter"))
+  
+#Manually specify the fill color for Black and White shooters
+  scale_fill_manual(values = c("red", "green"), labels = c("White Shooter", "Latino Shooter")) +
+  
+#Set theme
   theme_minimal()
 ```
+
+**Answer:** The shape of the distribution for the number of fatalities between Black and White shooters are similar in a sense that both are skewed to the right. However, they differ because there are more instances and extreme values for the number of fatalities with White shooters as opposed to Black shooters.
+
+Similarly, the shape of the distribution for the number of fatalities between White and Latino shooters are almost the same with the previous comparison. That is, both are skewed to the right but there are more instances and extreme values for the number of fatalities with White shooters as opposed to Latino shooters.
 
 ### Very open-ended
 
@@ -236,51 +346,96 @@ with_mental_illness <- mass_shootings %>%
 no_mental_illness <- mass_shootings %>% 
   filter(prior_mental_illness == "No")
 
-# Combine the two datasets
+#Combine the two datasets
 combined_data <- rbind(with_mental_illness, no_mental_illness)
 
-# Create a grouped bar chart
-ggplot(combined_data, aes(x = prior_mental_illness, fill = prior_mental_illness)) +
+#Create a grouped bar chart using ggplot
+combined_data %>% 
+ggplot() +
+
+#Set x-axis as the presence of mental illness and set the same as the fill
+  aes(x = prior_mental_illness, fill = prior_mental_illness) +
+
+#Create a bar graph
   geom_bar() +
-  labs(x = "Prior Mental Illness", y = "Number of Shootings") +
-  ggtitle("Comparison of Mass Shootings\nwith Mental Illness vs. No Mental Illness") +
+    
+#Create labels for the graph
+  labs(x = "Prior Mental Illness", y = "Number of Shootings", title = "Comparison of Mass Shootings\nwith Mental Illness vs. No Mental Illness") +
+    
+#Set theme
   theme_minimal()
 
 ```
+
+**Answer:** The graph above shows that there are more mass shooting fatalities if mass shooters had evidence of prior mental illness. We can therefore conclude that it is more likely for mass shooters in the sample to engage in mass shootings if they are mentally sick.
 
 -   Assess the relationship between mental illness and total victims, mental illness and location type, and the intersection of all three variables.
 
 ```{r}
 
-# Scatter Plot: Mental Illness vs. Total Victims
-ggplot(mass_shootings, aes(x = prior_mental_illness, y = total_victims)) +
-  geom_point() +
+#Filter out the NA values for prior mental illness from the data frame
+mass_shootings %>%
+  filter(!is.na(prior_mental_illness)) %>%
+  
+#Use ggplot to assess relationship between mental illness and total victims
+ggplot() +
+  
+#Set prior mental illness as x-axis and the number of total victims as y-axis
+  aes(x = prior_mental_illness, y = total_victims) +
+  
+#Create a scatter plot
+  geom_col() +
+  
+#Create labels for the graph
   labs(x = "Prior Mental Illness", y = "Total Victims") +
-  ggtitle("Relationship between Mental Illness and Total Victims")
+  ggtitle("Relationship between Mental Illness and Total Victims") +
+  
+#Set theme
+  theme_minimal()
 
-# Stacked Bar Chart: Mental Illness vs. Location Type
-ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, fill = location_type)) +
+#Filter out the NA values for prior mental illness from the data frame
+mass_shootings %>%
+  filter(!is.na(prior_mental_illness)) %>%
+
+#Use ggplot to assess relationship between mental illness and location type
+ggplot() +
+  
+#Set prior mental illness as x-axis and location type as y-axis, and use location type as fill
+  aes(x = prior_mental_illness, fill = location_type) +
+  
+#Create bar graph
   geom_bar() +
+  
+#Create labels for the graph
   labs(x = "Prior Mental Illness", y = "Count") +
   ggtitle("Comparison of Location Types based on Mental Illness") +
-  theme(legend.position = "bottom")
+  
+#Set theme
+  theme_minimal()
 
-# Grouped Bar Chart: Mental Illness, Location Type, and Total Victims
-ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, y = total_victims, fill = location_type)) +
+#Filter out the NA values for prior mental illness from the data frame
+mass_shootings %>% 
+  filter(!is.na(prior_mental_illness)) %>% 
+  
+#Use ggplot to assess relationship across the three variables
+  ggplot() +
+  
+#Set prior mental illness as x-axis, total victims as y-axis, and location type as fill
+  aes(x = prior_mental_illness, y = total_victims, fill = location_type) +
+  
+#Create a bar graph and set the height and positioning of the bars
   geom_bar(stat = "identity", position = "dodge") +
+  
+#Create labels for the graph
   labs(x = "Prior Mental Illness", y = "Total Victims") +
   ggtitle("Comparison of Mental Illness, Location Type, and Total Victims") +
-  theme(legend.position = "bottom")
-
-# Heatmap: Mental Illness, Location Type, and Total Victims
-ggplot(mass_shootings %>% filter(!is.na(prior_mental_illness)), aes(x = prior_mental_illness, y = location_type, fill = total_victims)) +
-  geom_tile() +
-  labs(x = "Prior Mental Illness", y = "Location Type", fill = "Total Victims") +
-  ggtitle("Intersection of Mental Illness, Location Type, and Total Victims")
+  
+#Set theme
+  theme_minimal()
 
 ```
 
-Make sure to provide a couple of sentences of written interpretation of your tables/figures. Graphs and tables alone will not be sufficient to answer this question.
+**Answer:** As seen from the first graph, the total number of victims is significantly higher for shooters with prior mental illness compared with those who do not.Further expanding this analysis through the second graph shows that mass shooters with no prior mental illness conduct most mass shootings in other location types or in the workplace, which is also similar to those with prior mental illness.The third graph shows that the number of total victims are highest in both other location types for mass shooters with no prior mental illness and for those who have.
 
 # Exploring credit card fraud
 
@@ -332,7 +487,6 @@ fraud_summary <- card_fraud %>%
   group_by(trans_year) %>%
   summarize(num_fraud_transactions = sum(is_fraud),
             frequency = num_fraud_transactions / n())
-
 
 ```
 
@@ -592,22 +746,25 @@ ggplot(philippines_energy_long, aes(x = year, y = electricity_generation, fill =
   ggtitle("Electricity Generation in the Philippines since 2000") +
   theme_minimal()
 
-
 ```
 
 ## 2. A scatter plot that looks at how CO2 per capita and GDP per capita are related
 
 ```{r}
 
-# Merge the CO2 per capita and GDP per capita data
-co2_gdp <- merge(co2_percap, gdp_percap, by = "year", all = TRUE)
+# Filter data for the Philippines
+co2_gdp_ph <- co2_gdp %>% filter(country.x == "Philippines")
 
-ggplot(energy, aes(x = energy_per_capita, y = GDPpercap)) +
+# Create scatter plot for CO2 per capita and GDP per capita
+plot_co2_gdp_ph <- ggplot(co2_gdp_ph, aes(x = GDPpercap, y = co2percap)) +
   geom_point() +
-  labs(x = "Electricity Usage per Capita per Day (kWh)",
-       y = "GDP per Capita",
-       title = "Relationship between Electricity Usage and GDP per Capita") +
+  geom_text(aes(label = year), vjust = -0.5, hjust = 0.5, size = 3) +
+  labs(x = "GDP per Capita", y = "CO2 per Capita") +
+  ggtitle("Relationship between CO2 per Capita and GDP per Capita (Philippines)") +
   theme_minimal()
+
+# Display the scatter plot
+plot_co2_gdp_ph
 
 ```
 
@@ -615,6 +772,19 @@ ggplot(energy, aes(x = energy_per_capita, y = GDPpercap)) +
 
 ```{r}
 
+# Filter data for the Philippines
+energy_gdp_ph <- energy_gdp %>% filter(country.x == "Philippines")
+
+# Create scatter plot for electricity usage per capita and GDP per capita
+plot_energy_gdp_ph <- ggplot(energy_gdp_ph, aes(x = GDPpercap, y = electricity_demand)) +
+  geom_point() +
+  geom_text(aes(label = year), vjust = -0.5, hjust = 0.5, size = 3) +
+  labs(x = "GDP per Capita", y = "Electricity Usage (kWh per Capita/Day)") +
+  ggtitle("Relationship between Electricity Usage and GDP per Capita (Philippines)") +
+  theme_minimal()
+
+# Display the scatter plot
+plot_energy_gdp_ph
 
 ```
 
@@ -677,11 +847,86 @@ gdp_percap <- wb_data(country = "countries_only",
 Specific questions:
 
 1.  How would you turn `energy` to long, tidy format?
+
+```{r}
+
+energy_tidy <- energy %>%
+  pivot_longer(cols = starts_with(c("biofuel", "coal", "gas", "hydro", "nuclear", "oil", "other_renewable", "solar", "wind")),
+               names_to = "energy_source",
+               values_to = "electricity_generated")
+```
+
 2.  You may need to join these data frames
     -   Use `left_join` from `dplyr` to [join the tables](http://r4ds.had.co.nz/relational-data.html)
     -   To complete the merge, you need a unique *key* to match observations between the data frames. Country names may not be consistent among the three dataframes, so please use the 3-digit ISO code for each country
     -   An aside: There is a great package called [`countrycode`](https://github.com/vincentarelbundock/countrycode) that helps solve the problem of inconsistent country names (Is it UK? United Kingdon? Great Britain?). `countrycode()` takes as an input a country's name in a specific format and outputs it using whatever format you specify.
+    
+```{r}
+
+# Join the data frames using ISO code as the key
+merged_data <- left_join(co2_percap, gdp_percap, by = c("iso2c", "year"))
+
+```
+
+
 3.  Write a function that takes as input any country's name and returns all three graphs. You can use the `patchwork` package to arrange the three graphs as shown below
+
+```{r}
+
+generate_country_graphs <- function(country_name) {
+  # Graph 1: Stacked Area Chart - Electricity Generation
+  philippines_energy <- energy %>% 
+    filter(iso_code == countrycode::countrycode(country_name, "country.name", "iso3c")) %>% 
+    select(year, coal, gas, hydro, nuclear, oil, other_renewable, solar, wind)
+  
+  philippines_energy_long <- philippines_energy %>% 
+    pivot_longer(cols = -year, names_to = "source", values_to = "electricity_generation")
+  
+  plot_energy_ph <- ggplot(philippines_energy_long, aes(x = year, y = electricity_generation, fill = source)) +
+    geom_area(colour = "grey90", alpha = 0.5, position = "fill") +
+    labs(x = "Year", y = "Electricity Generation", fill = "Source") +
+    scale_fill_manual(values = c("coal" = "darkred", "gas" = "orange", "hydro" = "blue", 
+                                 "nuclear" = "darkgreen", "oil" = "brown", "other_renewable" = "green", 
+                                 "solar" = "yellow", "wind" = "lightblue")) +
+    ggtitle(paste("Electricity Generation in", country_name, "since 2000")) +
+    theme_minimal()
+  
+  # Graph 2: Scatter Plot - CO2 per Capita vs. GDP per Capita
+  co2_gdp_ph <- co2_gdp %>% 
+    filter(country.x == country_name)
+  
+  plot_co2_gdp_ph <- ggplot(co2_gdp_ph, aes(x = GDPpercap, y = co2percap)) +
+    geom_point() +
+    geom_text(aes(label = year), vjust = -0.5, hjust = 0.5, size = 3) +
+    labs(x = "GDP per Capita", y = "CO2 per Capita") +
+    ggtitle(paste("Relationship between CO2 per Capita and GDP per Capita (", country_name, ")")) +
+    theme_minimal()
+  
+  # Graph 3: Scatter Plot - Electricity Usage per Capita vs. GDP per Capita
+  energy_gdp_ph <- energy_gdp %>% 
+    filter(country.x == country_name)
+  
+  plot_energy_gdp_ph <- ggplot(energy_gdp_ph, aes(x = GDPpercap, y = electricity_demand)) +
+    geom_point() +
+    geom_text(aes(label = year), vjust = -0.5, hjust = 0.5, size = 3) +
+    labs(x = "GDP per Capita", y = "Electricity Usage (kWh per Capita/Day)") +
+    ggtitle(paste("Relationship between Electricity Usage and GDP per Capita (", country_name, ")")) +
+    theme_minimal()
+  
+  # Arrange the graphs using patchwork
+  all_graphs <- plot_energy_ph + plot_co2_gdp_ph + plot_energy_gdp_ph
+  all_graphs <- all_graphs + plot_layout(ncol = 1)
+  
+  # Return the arranged graphs
+  return(all_graphs)
+}
+
+# Usage example: Generate graphs for the Philippines
+generate_country_graphs("Philippines")
+
+
+```
+
 
 ![](images/electricity-co2-gdp.png)
 
